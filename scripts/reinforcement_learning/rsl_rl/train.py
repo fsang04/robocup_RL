@@ -10,6 +10,8 @@
 import argparse
 import sys
 
+import torch  # noqa: F401 - must be imported before AppLauncher to pre-load CUDA DLLs on Windows
+
 from isaaclab.app import AppLauncher
 
 # local imports
