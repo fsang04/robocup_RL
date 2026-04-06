@@ -162,7 +162,10 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
         runner = DistillationRunner(env, agent_cfg.to_dict(), log_dir=None, device=agent_cfg.device)
     else:
         raise ValueError(f"Unsupported runner class: {agent_cfg.class_name}")
-    runner.load(resume_path)
+    # runner.load(resume_path)
+    # changed: for padded checkpoint (cross-task transfer), don't load in optimizer
+    runner.load(resume_path, load_cfg={"actor": True, "critic": True, "optimizer": False, "iteration": False})
+
 
     # obtain the trained policy for inference
     policy = runner.get_inference_policy(device=env.unwrapped.device)
@@ -207,6 +210,21 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
             actions = policy(obs)
             # env stepping
             obs, _, dones, _ = env.step(actions)
+
+            # # add: debug statements
+            # if timestep % 20 == 0:
+            #     unwrapped = env.unwrapped
+            #     robot_pos = unwrapped.scene["robot"].data.root_pos_w[0]   # first env
+            #     ball_pos = unwrapped.scene["ball"].data.root_link_pos_w[0]
+            #     dist = (robot_pos - ball_pos).norm().item()
+                
+            #     ball_vel = unwrapped.scene["ball"].data.root_link_vel_w[0, :3]
+            #     target = torch.tensor([10.0, 0.0, 0.0], device=ball_vel.device)
+            #     ball_to_target = target - ball_pos
+            #     vel_toward_target = (ball_vel * ball_to_target).sum() / (ball_to_target.norm() + 1e-6)
+                
+            #     print(f"[t={timestep:4d}] dist_to_ball: {dist:.3f}m | ball_vel_toward_goal: {vel_toward_target.item():.3f}")
+
             # reset recurrent states for episodes that have terminated
             if version.parse(installed_version) >= version.parse("4.0.0"):
                 policy.reset(dones)
