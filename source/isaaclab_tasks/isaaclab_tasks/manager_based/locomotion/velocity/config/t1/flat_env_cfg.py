@@ -8,7 +8,9 @@ from isaaclab.utils import configclass
 
 from .rough_env_cfg import T1RoughEnvCfg
 
-
+'''
+Sub-class of rough env that inherits the same T1 rewards class 
+'''
 @configclass
 class T1FlatEnvCfg(T1RoughEnvCfg):
     def __post_init__(self):
