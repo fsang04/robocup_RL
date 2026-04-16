@@ -81,3 +81,25 @@ gym.register(
         "skrl_cfg_entry_point": f"{agents.__name__}:skrl_kicking_ppo_cfg.yaml",
     },
 )
+
+
+gym.register(
+    id="Isaac-Velocity-GetUp-T1-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.getup_env_cfg:T1GetUpEnvCfg",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:T1GetUpPPORunnerCfg",
+    },
+)
+
+
+gym.register(
+    id="Isaac-Velocity-GetUp-T1-Play-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.getup_env_cfg:T1GetUpEnvCfg_PLAY",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:T1GetUpPPORunnerCfg",
+    },
+)

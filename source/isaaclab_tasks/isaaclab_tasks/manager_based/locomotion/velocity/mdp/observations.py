@@ -26,6 +26,17 @@ from isaaclab.utils.math import quat_apply_inverse, yaw_quat
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedEnv, ManagerBasedRLEnv
 
+# # copied from classic/humanoid/mdp 
+# def base_up_proj(env: ManagerBasedEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
+#     """Projection of the base up vector onto the world up vector."""
+#     # extract the used quantities (to enable type-hinting)
+#     asset: Articulation = env.scene[asset_cfg.name]
+#     # compute base up vector
+#     base_up_vec = -asset.data.projected_gravity_b
+
+#     return base_up_vec[:, 2].unsqueeze(-1)
+
+
 def ball_pos_relative(env, ball_cfg: SceneEntityCfg = SceneEntityCfg("ball")) -> torch.Tensor:
     """Ball position in the robot local frame (x=forward, y=left, z=up)."""
     robot = env.scene["robot"]
@@ -34,6 +45,7 @@ def ball_pos_relative(env, ball_cfg: SceneEntityCfg = SceneEntityCfg("ball")) ->
     robot_pos_w = robot.data.root_pos_w
     # rotate world-frame offset into robot's heading frame (strips roll/pitch, keeps yaw)
     return quat_apply_inverse(yaw_quat(robot.data.root_quat_w), ball_pos_w - robot_pos_w)
+
 
 def ball_vel_relative(env, ball_cfg: SceneEntityCfg = SceneEntityCfg("ball")) -> torch.Tensor:
     """Ball velocity in the robot local frame (x=forward, y=left, z=up)."""

@@ -21,7 +21,7 @@ from isaaclab.assets.articulation import ArticulationCfg
 # Configuration
 ##
 
-_T1_USD_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../data/Robots/Booster/T1/T1_locomotion.usd"))
+_T1_USD_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../data/Robots/Booster/T1/T1_23dof.usd"))
 
 T1_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
@@ -86,6 +86,24 @@ T1_CFG = ArticulationCfg(
             effort_limit_sim=100,
             stiffness=20.0,
             damping=4.0,
+        ),
+        "arms": ImplicitActuatorCfg(
+            joint_names_expr=[".*_Shoulder_Pitch", ".*_Shoulder_Roll", ".*_Elbow_Pitch", ".*_Elbow_Yaw"],
+            effort_limit_sim=300,
+            stiffness=20.0,
+            damping=2.0,
+        ),
+        "waist": ImplicitActuatorCfg(
+            joint_names_expr=["Waist"],
+            effort_limit_sim=30,
+            stiffness=50.0,
+            damping=2.0,
+        ),
+        "head": ImplicitActuatorCfg(
+            joint_names_expr=["AAHead_yaw", "Head_pitch"],
+            effort_limit_sim=7,
+            stiffness=10.0,
+            damping=1.0,
         ),
     },
 )

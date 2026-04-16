@@ -51,18 +51,28 @@ class T1KickingRewards(T1Rewards):
     # Rewards for kicking task
     ball_approach = RewTerm(
         func=mdp.approach_ball_reward,
-        weight=2.0,
-        params={"std": 1.0},
+        weight=3.0,
+        params={"std": 3.0},  # broad gradient so approach signal is strong even from ~3m away
+    )
+    align_with_ball = RewTerm(
+        func=mdp.robot_behind_ball_alignment,
+        weight=2.5,
+        params={
+            "ball_cfg": SceneEntityCfg("ball"),
+            "goal_pos": (5.0, 0.0, 0.0),
+            "proximity_threshold": 5.0  # active throughout approach, not just near ball
+        },
     )
     ball_velocity_toward_goal = RewTerm(
         func=mdp.ball_vel_toward_target, weight=2.0
     )
     swing_foot_contact = RewTerm(
-        func=mdp.undesired_contacts,
-        weight=0.0,
+        func=mdp.swing_foot_contact_near_ball,
+        weight=-0.5,
         params={
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names="right_foot_link"),
             "threshold": 1.0,
+            "proximity": 0.5, # only prenalize swing foot contact if 0.5m away from ball
         },
     )
     both_feet_in_air = RewTerm(
@@ -78,7 +88,7 @@ class T1KickingRewards(T1Rewards):
         weight=1.0,
         params={
             "ball_cfg": SceneEntityCfg("ball"),
-            "target_pos": (10.0, 0.0, 0.0),
+            "target_pos": (5.0, 0.0, 0.0),
         },
     )
 
@@ -115,17 +125,17 @@ class T1KickingEnvCfg(T1FlatEnvCfg):
         # Rewards -- adjust / zero-out inherited locomotion rewards as needed
         self.rewards.lin_vel_z_l2.weight = -1.0
         self.rewards.feet_air_time.weight = 0.25 
-        self.rewards.track_lin_vel_xy_exp.weight = 0.1
+        self.rewards.track_lin_vel_xy_exp.weight = 0.0  # let ball rewards drive movement instead of velocity commands
         self.rewards.flat_orientation_l2.weight = -2.0
         self.rewards.action_rate_l2.weight = -0.01
         self.rewards.joint_deviation_hip.weight = -0.5 # stronger to keep legs from crossing
         self.rewards.feet_slide.weight = -0.2 # add foot sliding penalty to encourage stable footing during kick 
         self.rewards.track_ang_vel_z_exp.weight = 0.0 # zero out 
 
-        # Commands -- adjust command ranges so doesn't conflict with ball approach
-        self.commands.base_velocity.ranges.lin_vel_x = (0.3, 0.8)
+        # Zero out velocity commands — task rewards should drive all movement
+        self.commands.base_velocity.ranges.lin_vel_x = (0.0, 0.0)
         self.commands.base_velocity.ranges.lin_vel_y = (0.0, 0.0)
-        self.commands.base_velocity.ranges.ang_vel_z = (0.0, 0.0) # less turning needed
+        self.commands.base_velocity.ranges.ang_vel_z = (0.0, 0.0)
 
 
 class T1KickingEnvCfg_PLAY(T1KickingEnvCfg):
